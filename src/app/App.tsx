@@ -1,34 +1,40 @@
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-
-import { FaGithub, FaLinkedin, FaTwitter, FaFilePdf } from "react-icons/fa";
+﻿import { type ComponentType, type FormEvent, type MouseEvent as ReactMouseEvent, useEffect, useMemo, useState } from "react";
 import {
-  Smartphone,
-  Code,
-  Palette,
-  Database,
-  Zap,
-  GitBranch,
-  Package,
-  Shield,
+  AnimatePresence,
+  motion,
+  useMotionValue,
+  useReducedMotion,
+  useScroll,
+  useSpring,
+  useTransform,
+} from "framer-motion";
+import { FaFilePdf, FaGithub, FaLinkedin, FaTwitter } from "react-icons/fa";
+import {
+  ArrowRight,
+  Award,
   Clock,
-  Users,
-  Mail,
+  Code,
+  Database,
   ExternalLink,
+  GitBranch,
+  Globe,
+  Mail,
+  Menu,
+  Package,
+  Palette,
+  Rocket,
+  Shield,
+  Smartphone,
+  Sparkles,
+  Star,
   Target,
   TrendingUp,
-  Rocket,
-  ArrowRight,
-  Menu,
+  Users,
   X,
-  Sparkles,
-  Award,
-  Star,
-  Globe
-} from 'lucide-react';
-import { Button } from './components/ui/button';
-import { Card } from './components/ui/card';
-import { ImageWithFallback } from './components/figma/ImageWithFallback';
+  Zap,
+} from "lucide-react";
+
+import { ImageWithFallback } from "./components/figma/ImageWithFallback";
 
 type Project = {
   name: string;
@@ -38,987 +44,826 @@ type Project = {
   github: string;
 };
 
+type Skill = {
+  icon: ComponentType<{ size?: number; className?: string }>;
+  name: string;
+  description: string;
+  gradient: string;
+};
+
+type Service = {
+  icon: ComponentType<{ size?: number; className?: string }>;
+  title: string;
+  description: string;
+};
+
+const navItems = ["About", "Skills", "Projects", "Services", "Contact"];
+
+const projects: Project[] = [
+  {
+    name: "Clip2Concept",
+    description:
+      "YouTube idea extraction app for creators with AI summary flow, notes system, and optimized content planning.",
+    image: `${import.meta.env.BASE_URL}images/clip2concept.svg`,
+    tags: ["Kotlin", "Compose", "MVVM", "Firebase", "YouTube API"],
+    github: "https://github.com/kumarpankajkumar123/Clip2Concept",
+  },
+  {
+    name: "TagInfoFinder",
+    description:
+      "A YouTube tags intelligence app for creator growth with keyword-driven recommendations and practical analytics.",
+    image: `${import.meta.env.BASE_URL}images/tags-modified.png`,
+    tags: ["REST API", "Firebase", "Material", "MVVM"],
+    github: "https://github.com/kumarpankajkumar123/TagInfoFinder",
+  },
+  {
+    name: "EduFun",
+    description:
+      "Gamified educational Android app focused on engagement, repeat usage and learning progress for kids.",
+    image: `${import.meta.env.BASE_URL}images/edufun_child.jpg`,
+    tags: ["Android", "Java", "Animation", "Clean UI"],
+    github: "https://github.com/kumarpankajkumar123/EduFun_Android_Application",
+  },
+  {
+    name: "QR Code Scanner",
+    description:
+      "Fast QR scanner with practical utility features and reliable real-time recognition for daily user workflows.",
+    image:
+      "https://images.unsplash.com/photo-1595079676339-1534801ad6cf?auto=format&fit=crop&w=1400&q=80",
+    tags: ["CameraX", "ML Kit", "Coroutines"],
+    github: "https://github.com/kumarpankajkumar123/qr_code-scanner-app",
+  },
+];
+
+const skills: Skill[] = [
+  {
+    icon: Smartphone,
+    name: "Android Studio",
+    description: "Professional Android workflow and tooling",
+    gradient: "from-[#22d3ee] via-[#0ea5e9] to-[#0284c7]",
+  },
+  {
+    icon: Code,
+    name: "Kotlin",
+    description: "Maintainable and scalable mobile code",
+    gradient: "from-[#38bdf8] via-[#6366f1] to-[#8b5cf6]",
+  },
+  {
+    icon: Package,
+    name: "Jetpack Compose",
+    description: "Modern declarative UI patterns",
+    gradient: "from-[#10b981] via-[#14b8a6] to-[#06b6d4]",
+  },
+  {
+    icon: Database,
+    name: "Firebase",
+    description: "Auth, Firestore, notifications, analytics",
+    gradient: "from-[#f59e0b] via-[#f97316] to-[#ef4444]",
+  },
+  {
+    icon: Globe,
+    name: "REST APIs",
+    description: "Stable integrations and API architecture",
+    gradient: "from-[#a3e635] via-[#22c55e] to-[#14b8a6]",
+  },
+  {
+    icon: GitBranch,
+    name: "Git + GitHub",
+    description: "Version control and delivery consistency",
+    gradient: "from-[#c084fc] via-[#a855f7] to-[#6366f1]",
+  },
+];
+
+const services: Service[] = [
+  {
+    icon: Smartphone,
+    title: "Android App Development",
+    description: "From discovery to delivery for production-ready Android applications.",
+  },
+  {
+    icon: Palette,
+    title: "UI Implementation",
+    description: "Pixel-accurate mobile UI with polished interaction behavior.",
+  },
+  {
+    icon: Database,
+    title: "Backend Integration",
+    description: "Robust API and Firebase integration with secure data handling.",
+  },
+  {
+    icon: Shield,
+    title: "Authentication",
+    description: "Secure login systems with clean access control design.",
+  },
+  {
+    icon: Zap,
+    title: "Performance Tuning",
+    description: "Faster startup, smoother scrolling, and reduced memory overhead.",
+  },
+  {
+    icon: TrendingUp,
+    title: "Maintenance",
+    description: "Ongoing updates, monitoring, and release support.",
+  },
+];
+
+const benefits = [
+  {
+    icon: Target,
+    title: "Clean Architecture",
+    text: "Code stays maintainable as your product grows.",
+  },
+  {
+    icon: Package,
+    title: "Scalable Codebase",
+    text: "Built for future features without refactoring chaos.",
+  },
+  {
+    icon: Clock,
+    title: "On-Time Delivery",
+    text: "Predictable milestones and transparent progress.",
+  },
+  {
+    icon: Users,
+    title: "Client Collaboration",
+    text: "Clear communication and fast decision loops.",
+  },
+];
+
+const titleCycle = ["Android Developer", "Freelance Engineer", "Product-Focused Builder"];
+
+function SectionHeader({
+  eyebrow,
+  title,
+  subtitle,
+}: {
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 22 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.35 }}
+      transition={{ duration: 0.45 }}
+      className="mx-auto mb-12 max-w-2xl text-center"
+    >
+      <p className="mb-3 text-[11px] uppercase tracking-[0.32em] text-cyan-200/90">{eyebrow}</p>
+      <h2 className="text-balance font-[Sora,sans-serif] text-3xl font-semibold leading-tight text-white md:text-5xl">
+        {title}
+      </h2>
+      <p className="mt-4 text-slate-300 md:text-lg">{subtitle}</p>
+    </motion.div>
+  );
+}
 
 export default function App() {
+  const prefersReducedMotion = useReducedMotion();
+  const { scrollYProgress, scrollY } = useScroll();
+  const progressScale = useSpring(scrollYProgress, { stiffness: 180, damping: 24, mass: 0.3 });
+  const heroParallaxY = useTransform(scrollY, [0, 600], [0, prefersReducedMotion ? 0 : 90]);
+  const tiltX = useMotionValue(0);
+  const tiltY = useMotionValue(0);
+  const rotateX = useSpring(tiltX, { stiffness: 140, damping: 14, mass: 0.5 });
+  const rotateY = useSpring(tiltY, { stiffness: 140, damping: 14, mass: 0.5 });
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-
-  const titles = ["Android Developer", "Freelancer"];
-  const [typedText, setTypedText] = useState("");
-  const [titleIndex, setTitleIndex] = useState(0);
-
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [titleIndex, setTitleIndex] = useState(0);
+  const [typedTitle, setTypedTitle] = useState("");
+  const [contactForm, setContactForm] = useState({
+    name: "",
+    email: "",
+    budget: "",
+    message: "",
+  });
+  const [formError, setFormError] = useState("");
 
-
-  const paragraphText =
-    "Freelance Android Developer | Kotlin | Jetpack Compose | MVVM | Firebase";
-
-  const [typedParagraph, setTypedParagraph] = useState("");
-
-  const [startTyping, setStartTyping] = useState(false);
+  const heroStats = useMemo(
+    () => [
+      { icon: Award, value: "1.5+", label: "Years Experience" },
+      { icon: Rocket, value: "10+", label: "Projects Delivered" },
+      { icon: Star, value: "100%", label: "Freelance Focus" },
+    ],
+    [],
+  );
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setStartTyping(true);
-    }, 1000); // 👈 dono ek saath start honge
-
-    return () => clearTimeout(timer);
+    const onScroll = () => setScrolled(window.scrollY > 24);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  useEffect(() => {
+    if (prefersReducedMotion) {
+      setTypedTitle(titleCycle[0]);
+      return;
+    }
+
+    let i = 0;
+    const text = titleCycle[titleIndex];
+    const interval = window.setInterval(() => {
+      i += 1;
+      setTypedTitle(text.slice(0, i));
+      if (i >= text.length) {
+        window.clearInterval(interval);
+        window.setTimeout(() => {
+          setTypedTitle("");
+          setTitleIndex((prev) => (prev + 1) % titleCycle.length);
+        }, 950);
+      }
+    }, 60);
+
+    return () => window.clearInterval(interval);
+  }, [prefersReducedMotion, titleIndex]);
 
   useEffect(() => {
-    if (!startTyping) return;
+    if (!selectedProject) {
+      return;
+    }
 
-    let charIndex = 0;
-    let intervalId: ReturnType<typeof setInterval> | null = null;
-    let timeoutId: ReturnType<typeof setTimeout> | null = null;
-
-    const startParaTyping = () => {
-      intervalId = setInterval(() => {
-        setTypedParagraph((prev) => {
-          if (charIndex < paragraphText.length) {
-            const updated = prev + paragraphText[charIndex];
-            charIndex++;
-            return updated;
-          } else {
-            if (intervalId) clearInterval(intervalId);
-
-            timeoutId = setTimeout(() => {
-              setTypedParagraph("");
-              charIndex = 0;
-              startParaTyping();
-            }, 2000);
-
-            return prev;
-          }
-        });
-      }, 120);
+    const onEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setSelectedProject(null);
+      }
     };
 
-    startParaTyping();
+    window.addEventListener("keydown", onEscape);
+    return () => window.removeEventListener("keydown", onEscape);
+  }, [selectedProject]);
 
-    return () => {
-      if (intervalId) clearInterval(intervalId);
-      if (timeoutId) clearTimeout(timeoutId);
-    };
-  }, [startTyping]);
+  const handleImageMouseMove = (event: ReactMouseEvent<HTMLDivElement>) => {
+    if (prefersReducedMotion) {
+      return;
+    }
 
+    const rect = event.currentTarget.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    const xPercent = (x / rect.width - 0.5) * 2;
+    const yPercent = (y / rect.height - 0.5) * 2;
 
-  useEffect(() => {
-    if (!startTyping) return;
+    tiltX.set(-yPercent * 7);
+    tiltY.set(xPercent * 7);
+  };
 
-    let charIndex = 0;
-    let intervalId: ReturnType<typeof setInterval> | null = null;
-    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+  const resetImageTilt = () => {
+    tiltX.set(0);
+    tiltY.set(0);
+  };
 
-    const startTitleTyping = () => {
-      intervalId = setInterval(() => {
-        setTypedText((prev) => {
-          if (charIndex < titles[titleIndex].length) {
-            const updated = prev + titles[titleIndex][charIndex];
-            charIndex++;
-            return updated;
-          } else {
-            if (intervalId) clearInterval(intervalId);
+  const handleFormSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const { name, email, budget, message } = contactForm;
 
-            timeoutId = setTimeout(() => {
-              setTypedText("");
-              charIndex = 0;
-              setTitleIndex((prev) => (prev + 1) % titles.length);
-            }, 1500);
+    if (!name.trim() || !email.trim() || !budget.trim() || !message.trim()) {
+      setFormError("Please fill all fields before submitting.");
+      return;
+    }
 
-            return prev;
-          }
-        });
-      }, 150);
-    };
+    setFormError("");
+    const subject = encodeURIComponent(`New Project Inquiry from ${name}`);
+    const messageText = `Name: ${name}\nEmail: ${email}\nBudget: ${budget}\n\nMessage:\n${message}`;
+    const body = encodeURIComponent(messageText);
+    const whatsappText = encodeURIComponent(`New Project Inquiry\n\n${messageText}`);
+    const whatsappUrl = `https://wa.me/917417322289?text=${whatsappText}`;
+    const mailtoUrl = `mailto:pankajkm347@gmail.com?subject=${subject}&body=${body}`;
 
-    startTitleTyping();
-
-    return () => {
-      if (intervalId) clearInterval(intervalId);
-      if (timeoutId) clearTimeout(timeoutId);
-    };
-  }, [startTyping, titleIndex]);
-
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-
-
+    window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+    window.location.href = mailtoUrl;
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0F172A] via-[#1E293B] to-[#312e81] text-white overflow-x-hidden">
-      {/* Floating Background Shapes */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <motion.div
-          className="absolute top-20 left-10 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl"
-          animate={{
-            y: [0, 50, 0],
-            x: [0, 30, 0],
-          }}
-          transition={{
-            duration: 8,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        />
-        <motion.div
-          className="absolute top-40 right-20 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"
-          animate={{
-            y: [0, -40, 0],
-            x: [0, -20, 0],
-          }}
-          transition={{
-            duration: 10,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        />
-        <motion.div
-          className="absolute bottom-40 left-1/3 w-80 h-80 bg-purple-600/10 rounded-full blur-3xl"
-          animate={{
-            y: [0, 60, 0],
-            x: [0, -40, 0],
-          }}
-          transition={{
-            duration: 12,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        />
+    <div className="relative min-h-screen overflow-x-hidden bg-[#071321] text-white grain-bg">
+      <motion.div
+        style={{ scaleX: progressScale }}
+        className="fixed left-0 top-0 z-[60] h-1 w-full origin-left bg-gradient-to-r from-[#22d3ee] via-[#34d399] to-[#f59e0b]"
+      />
+
+      <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+        <div className="absolute -left-40 top-[-14rem] h-[34rem] w-[34rem] rounded-full bg-[#22d3ee]/16 blur-3xl" />
+        <div className="absolute right-[-14rem] top-[16%] h-[36rem] w-[36rem] rounded-full bg-[#34d399]/14 blur-3xl" />
+        <div className="absolute bottom-[-18rem] left-[28%] h-[30rem] w-[30rem] rounded-full bg-[#fb923c]/16 blur-3xl" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_18%,rgba(255,255,255,0.14),transparent_38%)]" />
       </div>
 
-      {/* Navigation */}
       <motion.nav
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-[#0F172A]/80 backdrop-blur-xl shadow-lg' : ''
-          }`}
+        initial={{ y: -24, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.4 }}
+        className={`fixed left-0 right-0 top-0 z-50 border-b transition-all duration-300 ${
+          scrolled ? "border-white/10 bg-[#071321]/72 backdrop-blur-xl" : "border-transparent"
+        }`}
       >
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <motion.div
-            className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent"
-            whileHover={{ scale: 1.05 }}
-          >
-            Pankaj Kumar
-          </motion.div>
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4 md:px-8">
+          <a href="#top" className="flex flex-col leading-tight">
+            <span className="font-[Sora,sans-serif] text-xl font-semibold tracking-tight text-white">
+              Pankaj Kumar
+            </span>
+            <span className="text-[11px] uppercase tracking-[0.16em] text-cyan-200/80">Android Developer</span>
+          </a>
 
-          <div className="hidden md:flex items-center gap-8">
-            {['About', 'Skills', 'Projects', 'Services', 'Contact'].map((item) => (
-              <a
-                key={item}
-                href={`#${item.toLowerCase()}`}
-                className="text-gray-300 hover:text-white transition-colors duration-300"
-              >
+          <div className="hidden items-center gap-8 text-sm text-slate-100 md:flex">
+            {navItems.map((item) => (
+              <a key={item} href={`#${item.toLowerCase()}`} className="transition-colors hover:text-cyan-300">
                 {item}
               </a>
             ))}
             <a
-              href='#contact'>
-              <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-full px-6">
-                Hire Me
-              </Button>
+              href="#contact"
+              className="rounded-full bg-gradient-to-r from-cyan-400 to-emerald-400 px-5 py-2 font-medium text-[#05212e] transition hover:brightness-110"
+            >
+              Hire Me
             </a>
-
           </div>
 
           <button
-            className="md:hidden"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            aria-label="Toggle menu"
+            className="rounded-lg border border-white/20 p-2 text-slate-100 md:hidden"
+            onClick={() => setIsMenuOpen((prev) => !prev)}
           >
-            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            {isMenuOpen ? <X size={18} /> : <Menu size={18} />}
           </button>
         </div>
 
-        {/* Mobile Menu */}
-        {isMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="md:hidden bg-[#0F172A]/95 backdrop-blur-xl px-6 py-4"
-          >
-            {['About', 'Skills', 'Projects', 'Services', 'Contact'].map((item) => (
-              <a
-                key={item}
-                href={`#${item.toLowerCase()}`}
-                className="block py-3 text-gray-300 hover:text-white transition-colors"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                {item}
-              </a>
-            ))}
-          </motion.div>
-        )}
-      </motion.nav>
-
-      {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center px-6 pt-20">
-
-        <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center">
-          <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8 }}
-          >
+        <AnimatePresence>
+          {isMenuOpen && (
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 mb-6"
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="overflow-hidden border-t border-white/10 bg-[#071321]/95 md:hidden"
             >
-              <Sparkles className="text-purple-400" size={18} />
-              <span className="text-sm text-gray-300">Available for Freelance</span>
-            </motion.div>
-
-            <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
-              <span className="bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 bg-clip-text text-transparent">
-                {typedText}
-                <span className="ml-1 animate-pulse">|</span>
-              </span>
-            </h1>
-
-            <h2 className="text-3xl md:text-4xl font-semibold mb-6 text-gray-200">
-              Turning Ideas into Scalable Apps
-            </h2>
-            <p className="text-lg text-gray-400 mb-8 leading-relaxed min-h-[56px]">
-              {typedParagraph}
-              <span className="ml-1">|</span>
-            </p>
-
-
-            <div className="flex flex-wrap gap-4">
-              <a
-                href='#contact'>
-                <Button
-                  className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-full px-8 py-6 text-lg group"
-                >
-                  Hire Me
-                  <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" size={20} />
-                </Button>
-              </a>
-
-              <a
-                href='#projects'>
-                <Button
-                  variant="outline"
-                  className="rounded-full px-8 py-6 text-lg border-2 border-white/20 hover:border-white/40 bg-white/5 hover:bg-white/10 backdrop-blur-sm"
-                >
-                  View Projects
-                </Button>
-              </a>
-
-            </div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="relative  flex justify-center md:justify-end"
-          >
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-2xl blur-3xl" />
-
-              <div className="relative z-10 aspect-[2/3] max-h-[360px] sm:max-h-[400px] md:max-h-[480px] overflow-hidden rounded-2xl shadow-2xl">
-                <ImageWithFallback
-                  src="/images/profile.jpeg"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* About Me Section */}
-      <section id="about" className="py-24 px-6 relative">
-        <div className="max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              <span className="bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">
-                About Me
-              </span>
-            </h2>
-            <p className="text-gray-400 text-lg">Building Android solutions that make a difference</p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-              className="flex justify-center"
-            >
-              <div className="relative w-80 h-80 flex items-center justify-center">
-
-                {/* 🌑 DEEP BACK SHADOW (depth base) */}
-                <div className="absolute inset-0 rounded-full bg-black/40 blur-3xl z-0" />
-
-                {/* 🌈 OUTER RING + SHADOW */}
-                <motion.svg
-                  className="absolute inset-0 z-10 drop-shadow-[0_0_25px_rgba(168,85,247,0.45)]"
-                  viewBox="0 0 200 200"
-                  style={{ originX: "50%", originY: "50%" }}
-                  animate={{ rotate: 360 }}
-                  transition={{
-                    duration: 22, // slow
-                    repeat: Infinity,
-                    ease: "linear",
-                  }}
-                >
-                  <defs>
-                    <linearGradient id="outerGradient" x1="0" y1="0" x2="200" y2="200">
-                      <stop offset="0%" stopColor="#60A5FA" />
-                      <stop offset="50%" stopColor="#A855F7" />
-                      <stop offset="100%" stopColor="#EC4899" />
-                    </linearGradient>
-                  </defs>
-
-                  <circle
-                    cx="100"
-                    cy="100"
-                    r="94"
-                    fill="none"
-                    stroke="url(#outerGradient)"
-                    strokeWidth="3.5"
-                    strokeLinecap="round"
-                  />
-                </motion.svg>
-
-                {/* 🔵 INNER RING (REVERSE) + STRONGER SHADOW */}
-                <motion.svg
-                  className="absolute inset-6 z-20 drop-shadow-[0_0_18px_rgba(96,165,250,0.6)]"
-                  viewBox="0 0 200 200"
-                  style={{ originX: "50%", originY: "50%" }}
-                  animate={{ rotate: -360 }}
-                  transition={{
-                    duration: 10, // fast (clear difference)
-                    repeat: Infinity,
-                    ease: "linear",
-                  }}
-                >
-                  <defs>
-                    <linearGradient id="innerGradient" x1="200" y1="0" x2="0" y2="200">
-                      <stop offset="0%" stopColor="#22D3EE" />
-                      <stop offset="50%" stopColor="#6366F1" />
-                      <stop offset="100%" stopColor="#A855F7" />
-                    </linearGradient>
-                  </defs>
-
-                  <circle
-                    cx="100"
-                    cy="100"
-                    r="78"
-                    fill="none"
-                    stroke="url(#innerGradient)"
-                    strokeWidth="2.5"
-                    strokeDasharray="4 10"   // 👈 dashed (visual difference)
-                    strokeLinecap="round"
-                  />
-                </motion.svg>
-
-                {/* 🧑 PROFILE IMAGE (TOP LAYER) */}
-                <div className="relative z-30 w-64 h-64 rounded-full overflow-hidden border-4 border-purple-500/40 shadow-[0_20px_60px_rgba(0,0,0,0.7)]">
-                  <ImageWithFallback
-                    src="/images/pankaj_about1.jpeg"
-                    alt="Pankaj Kumar - Android Developer"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              </div>
-
-
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, x: 30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-            >
-              <p className="text-gray-300 text-lg leading-relaxed mb-8">
-                I'm a passionate Android Developer specializing in building modern, scalable mobile applications.
-                With expertise in Kotlin, Jetpack Compose, and clean architecture principles, I transform innovative
-                ideas into polished Android applications that users love.
-              </p>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                {[
-                  { icon: Award, label: '1.5+ Years', sublabel: 'Experience' },
-                  { icon: Rocket, label: '10+ Projects', sublabel: 'Completed' },
-                  { icon: Star, label: '100%', sublabel: 'Freelance Ready' }
-                ].map((stat, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: index * 0.1 }}
-                    whileHover={{ scale: 1.05, y: -5 }}
+              <div className="mx-auto flex max-w-6xl flex-col gap-4 px-5 py-5">
+                {navItems.map((item) => (
+                  <a
+                    key={item}
+                    href={`#${item.toLowerCase()}`}
+                    className="text-sm text-slate-100"
+                    onClick={() => setIsMenuOpen(false)}
                   >
-                    <Card className="bg-white/5 backdrop-blur-sm border-white/10 p-6 rounded-2xl hover:bg-white/10 transition-all duration-300">
-                      <stat.icon className="text-purple-400 mb-3" size={32} />
-                      <div className="text-2xl font-bold text-white mb-1">{stat.label}</div>
-                      <div className="text-sm text-gray-400">{stat.sublabel}</div>
-                    </Card>
-                  </motion.div>
+                    {item}
+                  </a>
                 ))}
               </div>
             </motion.div>
-          </div>
-        </div>
-      </section>
+          )}
+        </AnimatePresence>
+      </motion.nav>
 
-      {/* Skills Section */}
-      <section id="skills" className="py-24 px-6 relative">
-        <div className="max-w-7xl mx-auto">
+      <section id="top" className="mx-auto flex min-h-screen max-w-6xl items-center px-5 pb-20 pt-28 md:px-8">
+        <div className="grid w-full gap-10 md:grid-cols-[1.1fr_0.9fr] md:items-center">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.55 }}
           >
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              <span className="bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">
-                Skills & Tools
-              </span>
-            </h2>
-            <p className="text-gray-400 text-lg">Technologies I work with</p>
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-cyan-300/35 bg-cyan-300/10 px-4 py-2 text-xs uppercase tracking-[0.2em] text-cyan-100">
+              <Sparkles size={14} /> Open For New Projects
+            </div>
+
+            <h1 className="text-balance font-[Sora,sans-serif] text-[2.2rem] font-semibold leading-[1.08] text-white md:text-[3.45rem]">
+              Designing and building Android apps with premium product quality.
+            </h1>
+
+            <p className="mt-4 min-h-8 font-[Space_Grotesk,sans-serif] text-lg text-emerald-200 md:text-2xl">
+              {typedTitle}
+              {!prefersReducedMotion && <span className="ml-1 animate-pulse text-emerald-300">|</span>}
+            </p>
+
+            <p className="mt-6 max-w-xl text-base leading-relaxed text-slate-300 md:text-lg">
+              Freelance Android Developer specializing in Kotlin, Jetpack Compose, MVVM, and Firebase. I turn product ideas into smooth, scalable mobile experiences.
+            </p>
+
+            <div className="mt-9 flex flex-wrap gap-4">
+              <a
+                href="#projects"
+                className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-cyan-400 to-emerald-400 px-7 py-3 font-medium text-[#05212e] transition hover:brightness-110"
+              >
+                View Projects
+                <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
+              </a>
+              <a
+                href="#contact"
+                className="inline-flex items-center rounded-full border border-white/25 bg-white/5 px-7 py-3 font-medium text-white backdrop-blur transition hover:bg-white/10"
+              >
+                Contact Me
+              </a>
+            </div>
           </motion.div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {[
-              { icon: Smartphone, name: 'Android Studio', color: 'from-green-400 to-green-600' },
-              { icon: Code, name: 'Kotlin', color: 'from-purple-400 to-purple-600' },
-              { icon: Package, name: 'Jetpack Compose', color: 'from-blue-400 to-blue-600' },
-              { icon: Code, name: 'XML', color: 'from-orange-400 to-orange-600' },
-              { icon: Database, name: 'Firebase', color: 'from-yellow-400 to-yellow-600' },
-              { icon: Globe, name: 'REST APIs', color: 'from-cyan-400 to-cyan-600' },
-              { icon: Target, name: 'MVVM', color: 'from-pink-400 to-pink-600' },
-              { icon: GitBranch, name: 'Git & GitHub', color: 'from-gray-400 to-gray-600' }
-            ].map((skill, index) => (
+          <motion.div style={{ y: heroParallaxY }} className="relative mx-auto w-full max-w-[25rem]">
+            <motion.div
+              className="absolute -inset-2 rounded-[2.2rem] bg-gradient-to-br from-cyan-300/35 via-emerald-300/20 to-orange-300/25 blur-2xl"
+              animate={prefersReducedMotion ? undefined : { scale: [1, 1.04, 1], opacity: [0.5, 0.8, 0.5] }}
+              transition={{ duration: 5.2, repeat: Infinity, ease: "easeInOut" }}
+            />
+            <motion.div
+              className="absolute -inset-1 rounded-[2.1rem] border border-cyan-200/30"
+              animate={prefersReducedMotion ? undefined : { rotate: [0, 360] }}
+              transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
+            />
+            <motion.div
+              className="relative rounded-[2rem] border border-white/15 bg-white/8 p-2 backdrop-blur-xl glass-card"
+              animate={prefersReducedMotion ? undefined : { y: [0, -10, 0] }}
+              transition={{ duration: 4.6, repeat: Infinity, ease: "easeInOut" }}
+              whileHover={{ scale: 1.02 }}
+              style={{ rotateX, rotateY, transformPerspective: 1200 }}
+              onMouseMove={handleImageMouseMove}
+              onMouseLeave={resetImageTilt}
+            >
               <motion.div
-                key={skill.name}
-                initial={{ opacity: 0, scale: 0.8 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.05 }}
-                whileHover={{ scale: 1.05, y: -8 }}
+                animate={prefersReducedMotion ? undefined : { scale: [1, 1.02, 1] }}
+                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                className="relative"
               >
-                <Card className="bg-white/5 backdrop-blur-md border-white/10 p-8 rounded-3xl hover:bg-white/10 transition-all duration-300 group cursor-pointer">
-                  <div className={`bg-gradient-to-br ${skill.color} p-4 rounded-2xl inline-block mb-4 group-hover:shadow-lg group-hover:shadow-purple-500/50 transition-all duration-300`}>
-                    <skill.icon className="text-white" size={32} />
-                  </div>
-                  <h3 className="font-semibold text-white">{skill.name}</h3>
-                </Card>
+                <ImageWithFallback
+                  src={`${import.meta.env.BASE_URL}images/profile.jpeg`}
+                  alt="Pankaj Kumar"
+                  className="h-[29rem] w-full rounded-[1.5rem] object-cover"
+                />
+                <motion.div
+                  className="pointer-events-none absolute -inset-y-8 left-[-35%] w-[45%] rotate-12 bg-gradient-to-r from-transparent via-white/30 to-transparent"
+                  animate={prefersReducedMotion ? undefined : { x: ["0%", "260%"] }}
+                  transition={{ duration: 3.8, repeat: Infinity, repeatDelay: 1.2, ease: "easeInOut" }}
+                />
               </motion.div>
-            ))}
-          </div>
+            </motion.div>
+          </motion.div>
         </div>
       </section>
 
-      {/* Featured Projects Section */}
-      <section id="projects" className="py-24 px-6 relative">
-        <div className="max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              <span className="bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">
-                Featured Projects
-              </span>
-            </h2>
-            <p className="text-gray-400 text-lg">Showcasing my best work</p>
-          </motion.div>
+      <section id="about" className="mx-auto max-w-6xl px-5 py-24 md:px-8">
+        <SectionHeader
+          eyebrow="About"
+          title="A developer portfolio built like a product landing page"
+          subtitle="Modern bento-inspired layout, smooth animations, and clear conversion-focused structure."
+        />
 
-          <div className="grid md:grid-cols-2 gap-8">
-            {[
-              {
-                name: 'Clip2Concept',
-                description: 'AI-powered YouTube learning app that transforms video content into structured learning materials with intelligent content extraction.',
-                tags: ['Kotlin', 'Jetpack Compose', 'Room database', 'Mvvm', 'REST API', 'Animation', 'Crash Analytics', 'AI Integration', 'Google Ads', 'YouTube API'],
-                image: '/images/clip2concept.svg',
-                github: 'https://github.com/kumarpankajkumar123/Clip2Concept'
-              },
-              {
-                name: 'TagInfoFinder',
-                description: 'Advanced YouTube tags extraction tool helping content creators optimize their videos with data-driven tag suggestions.',
-                tags: ['Firebase', 'REST API', 'Material Design', 'MVVM', 'Youtube API', 'Local Storage'],
-                image: '/images/tags-modified.png',
-                github: 'https://github.com/kumarpankajkumar123/TagInfoFinder'
-              },
-              {
-                name: 'EduFun',
-                description: 'Interactive kids learning application featuring gamified educational content with engaging animations and progress tracking.',
-                tags: ['XML', 'Animation', 'Java', 'MVC pattern', 'Clean UI'],
-                image: '/images/edufun_child.jpg',
-                github: 'https://github.com/kumarpankajkumar123/EduFun_Android_Application'
-              },
-              {
-                name: 'QR Code Scanner',
-                description: 'ML-based QR code scanner with advanced recognition capabilities, supporting multiple formats and real-time scanning.',
-                tags: ['ML Kit', 'CameraX', 'Kotlin Coroutines', 'Material You'],
-                image: 'https://images.unsplash.com/photo-1629697776809-f37ceac39e77?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtb2JpbGUlMjBhcHAlMjBtb2NrdXB8ZW58MXx8fHwxNzY3NDE4MzkyfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
-                github: 'https://github.com/kumarpankajkumar123/qr_code-scanner-app'
-              }
-            ].map((project, index) => (
-              <motion.div
-                key={project.name}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                whileHover={{ y: -10 }}
-              >
-                <Card className="bg-white/5 backdrop-blur-md border-white/10 rounded-3xl overflow-hidden hover:bg-white/10 transition-all duration-300 group">
-                  <div className="relative overflow-hidden">
+        <div className="grid gap-5 md:grid-cols-3">
+          {heroStats.map((item, index) => (
+            <motion.article
+              key={item.label}
+              initial={{ opacity: 0, y: 28 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.35 }}
+              transition={{ delay: index * 0.08 }}
+              whileHover={{ y: -4 }}
+              className="rounded-3xl border border-white/12 bg-white/6 p-7 backdrop-blur-xl glass-card"
+            >
+              <item.icon className="mb-4 text-cyan-300" size={24} />
+              <p className="font-[Sora,sans-serif] text-4xl font-semibold text-white">{item.value}</p>
+              <p className="mt-2 text-slate-300">{item.label}</p>
+            </motion.article>
+          ))}
+        </div>
+      </section>
+
+      <section id="skills" className="mx-auto max-w-6xl px-5 py-24 md:px-8">
+        <SectionHeader
+          eyebrow="Skills"
+          title="Technology stack for modern Android products"
+          subtitle="Focused tooling and architecture choices for scalable, maintainable apps."
+        />
+
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {skills.map((skill, index) => (
+            <motion.article
+              key={skill.name}
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.3 }}
+              transition={{ delay: index * 0.06 }}
+              whileHover={{ y: -6 }}
+              className="group relative overflow-hidden rounded-3xl border border-white/12 bg-white/6 p-6 backdrop-blur-xl glass-card"
+            >
+              <div
+                className={`absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r ${skill.gradient} opacity-85 transition-opacity duration-300 group-hover:opacity-100`}
+              />
+              <div className="mb-4 inline-flex rounded-xl border border-white/10 bg-[#0a2137]/90 p-3">
+                <skill.icon className="text-cyan-300" size={24} />
+              </div>
+              <h3 className="font-[Sora,sans-serif] text-xl font-medium text-white">{skill.name}</h3>
+              <p className="mt-2 text-slate-300">{skill.description}</p>
+            </motion.article>
+          ))}
+        </div>
+      </section>
+
+      <section id="projects" className="mx-auto max-w-6xl px-5 py-24 md:px-8">
+        <SectionHeader
+          eyebrow="Projects"
+          title="Featured work with modern card layout"
+          subtitle="Case-study style cards with visual hierarchy and smooth micro-interactions."
+        />
+
+        <div className="grid gap-6 lg:grid-cols-2">
+          {projects.map((project, index) => (
+            <motion.article
+              key={project.name}
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.25 }}
+              transition={{ delay: index * 0.08 }}
+              whileHover={{ y: -6 }}
+              className="group overflow-hidden rounded-[1.75rem] border border-white/12 bg-white/6 backdrop-blur-xl glass-card"
+            >
+              <div className="relative overflow-hidden px-6 pb-5 pt-6">
+                <div className="relative mx-auto h-[16.5rem] w-[8.7rem] rounded-[2.1rem] border border-white/25 bg-[#061423] p-[6px] shadow-[0_24px_50px_rgba(0,0,0,0.45)]">
+                  <div className="absolute left-1/2 top-[7px] z-10 h-[16px] w-[72px] -translate-x-1/2 rounded-full bg-black/70" />
+                  <div className="h-full w-full overflow-hidden rounded-[1.65rem]">
                     <ImageWithFallback
                       src={project.image}
                       alt={project.name}
-                      className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500"
+                      className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#0F172A] to-transparent opacity-60" />
                   </div>
-
-                  <div className="p-6">
-                    <h3 className="text-2xl font-bold text-white mb-3">{project.name}</h3>
-                    <p className="text-gray-400 mb-4 leading-relaxed">{project.description}</p>
-
-                    <div className="flex flex-wrap gap-2 mb-6">
-                      {project.tags.map((tag) => (
-                        <span
-                          key={tag}
-                          className="px-3 py-1 rounded-full text-xs bg-purple-500/20 text-purple-300 border border-purple-500/30"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-
-                    <div className="flex gap-3">
-                      <Button
-                        className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600"
-                        onClick={() => setSelectedProject(project)}
-                      >
-                        View Details
-                      </Button>
-
-                      <a
-                        href={project.github}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <Button
-                          variant="outline"
-                          className="rounded-xl border-white/20 hover:border-white/40 bg-white/5 hover:bg-white/10"
-                        >
-                          <FaGithub size={18} />
-                        </Button>
-                      </a>
-
-                    </div>
-                  </div>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Freelance Services Section */}
-      <section id="services" className="py-24 px-6 relative">
-        <div className="max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              <span className="bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">
-                Freelance Services
-              </span>
-            </h2>
-            <p className="text-gray-400 text-lg">What I can do for you</p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-3 gap-6">
-            {[
-              {
-                icon: Smartphone,
-                title: 'Android App Development',
-                description: 'Custom Android applications built with modern architecture and best practices.'
-              },
-              {
-                icon: Palette,
-                title: 'UI Design Implementation',
-                description: 'Transform Figma designs into pixel-perfect Android interfaces using Jetpack Compose.'
-              },
-              {
-                icon: Database,
-                title: 'API Integration',
-                description: 'Seamless integration of REST APIs, GraphQL, and third-party services.'
-              },
-              {
-                icon: Shield,
-                title: 'Firebase Authentication',
-                description: 'Secure user authentication and authorization using Firebase services.'
-              },
-              {
-                icon: Zap,
-                title: 'App Performance Optimization',
-                description: 'Optimize app performance, reduce load times, and improve user experience.'
-              },
-              {
-                icon: TrendingUp,
-                title: 'App Maintenance',
-                description: 'Ongoing support, bug fixes, and feature updates for existing applications.'
-              }
-            ].map((service, index) => (
-              <motion.div
-                key={service.title}
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                whileHover={{ scale: 1.05, y: -8 }}
-              >
-                <Card className="bg-white/5 backdrop-blur-md border-white/10 p-8 rounded-3xl hover:bg-white/10 transition-all duration-300 h-full">
-                  <div className="bg-gradient-to-br from-blue-500 to-purple-600 p-4 rounded-2xl inline-block mb-4">
-                    <service.icon className="text-white" size={28} />
-                  </div>
-                  <h3 className="text-xl font-bold text-white mb-3">{service.title}</h3>
-                  <p className="text-gray-400 leading-relaxed">{service.description}</p>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Why Hire Me Section */}
-      <section className="py-24 px-6 relative">
-        <div className="max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              <span className="bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">
-                Why Hire Me
-              </span>
-            </h2>
-            <p className="text-gray-400 text-lg">Client benefits that matter</p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              {
-                icon: Target,
-                title: 'Clean Architecture',
-                description: 'Well-structured, maintainable code following industry best practices.'
-              },
-              {
-                icon: Package,
-                title: 'Scalable Code',
-                description: 'Future-proof solutions that grow with your business needs.'
-              },
-              {
-                icon: Clock,
-                title: 'On-Time Delivery',
-                description: 'Reliable timelines with consistent progress updates.'
-              },
-              {
-                icon: Users,
-                title: 'Client-Friendly',
-                description: 'Clear communication and collaborative development process.'
-              }
-            ].map((benefit, index) => (
-              <motion.div
-                key={benefit.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                whileHover={{ scale: 1.05 }}
-              >
-                <Card className="bg-gradient-to-br from-white/5 to-white/0 backdrop-blur-md border-white/10 p-6 rounded-2xl hover:from-white/10 hover:to-white/5 transition-all duration-300 text-center h-full">
-                  <benefit.icon className="text-purple-400 mx-auto mb-4" size={40} />
-                  <h3 className="text-lg font-bold text-white mb-2">{benefit.title}</h3>
-                  <p className="text-sm text-gray-400">{benefit.description}</p>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Contact Section */}
-      <section id="contact" className="py-24 px-6 relative">
-        <div className="max-w-4xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              <span className="bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">
-                Let's Build Your App Idea
-              </span>
-            </h2>
-            <p className="text-gray-400 text-lg">Ready to start your next Android project?</p>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-          >
-            <Card className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl border-white/20 p-12 rounded-3xl">
-              <div className="text-center mb-8">
-                <Mail className="text-purple-400 mx-auto mb-4" size={48} />
-                <h3 className="text-2xl font-bold text-white mb-2">Get In Touch</h3>
-                <p className="text-gray-400">Available for freelance opportunities</p>
+                </div>
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#071321]/65 via-transparent to-transparent" />
               </div>
 
-              <div className="flex flex-wrap justify-center gap-4 mb-8">
-                <a href="mailto:pankajtech347@gmail.com">
-                  <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-full px-8 py-6 text-lg group">
-                    <Mail className="mr-2" size={20} />
-                    Email Me
-                    <ExternalLink
-                      className="ml-2 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"
-                      size={18}
-                    />
-                  </Button>
-                </a>
-                <a
-                  href="https://github.com/kumarpankajkumar123"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <Button
-                    variant="outline"
-                    className="rounded-full px-8 py-6 text-lg border-2 border-white/20 hover:border-white/40 bg-white/5 hover:bg-white/10"
-                  >
-                    <FaGithub className="mr-2" size={20} />
-                    GitHub
-                  </Button>
-                </a>
-                <a
-                  href="/resume/pankaj_just_update.pdf"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <Button
-                    variant="outline"
-                    className="rounded-full px-8 py-6 text-lg border-2 border-white/20 hover:border-white/40 bg-white/5 hover:bg-white/10"
-                  >
-                    <FaFilePdf className="mr-2 text-red-500" size={20} />
-                    Download Resume
-                  </Button>
-                </a>
-              </div>
+              <div className="p-6">
+                <h3 className="font-[Sora,sans-serif] text-2xl font-semibold text-white">{project.name}</h3>
+                <p className="mt-3 text-slate-300">{project.description}</p>
 
-              <div className="flex justify-center gap-6">
-                {[
-                  {
-                    icon: FaLinkedin,
-                    label: 'LinkedIn',
-                    link: 'https://www.linkedin.com/in/pankaj-kumar-a5a827224/'
-                  },
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {project.tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="rounded-full border border-cyan-300/30 bg-cyan-400/10 px-3 py-1 text-xs text-cyan-100"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
 
-                  {
-                    icon: FaTwitter,
-                    label: 'Twitter',
-                    link: 'https://x.com/pankajk26315693'
-                  },
-                  {
-                    icon: Globe,
-                    label: 'Fiverr',
-                    link: 'https://www.fiverr.com/sellers/pankaj_android/edit'
-                  }
-                ].map((social) => (
-                  <motion.a
-                    key={social.label}
-                    href={social.link}
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <button
+                    onClick={() => setSelectedProject(project)}
+                    className="inline-flex items-center rounded-full bg-gradient-to-r from-cyan-400 to-emerald-400 px-5 py-2 text-sm font-medium text-[#05212e]"
+                  >
+                    View Details
+                  </button>
+                  <a
+                    href={project.github}
                     target="_blank"
                     rel="noopener noreferrer"
-                    whileHover={{ scale: 1.2, rotate: 5 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="p-4 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 hover:border-purple-500/50 transition-all duration-300"
-                    title={social.label}
+                    className="inline-flex items-center rounded-full border border-white/20 bg-white/5 px-5 py-2 text-sm text-white transition hover:bg-white/10"
                   >
-                    <social.icon size={24} className="text-gray-300 hover:text-white" />
-                  </motion.a>
-                ))}
+                    <FaGithub className="mr-2" /> GitHub
+                  </a>
+                </div>
               </div>
-            </Card>
-          </motion.div>
+            </motion.article>
+          ))}
         </div>
       </section>
 
-      {selectedProject && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4">
+      <section id="services" className="mx-auto max-w-6xl px-5 py-24 md:px-8">
+        <SectionHeader
+          eyebrow="Services"
+          title="Freelance services for product teams"
+          subtitle="Flexible support for new apps, feature work, and long-term Android maintenance."
+        />
 
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="max-w-3xl w-full bg-[#0F172A] rounded-3xl p-8 relative"
-          >
-            {/* ❌ Close */}
-            <button
-              className="absolute top-4 right-4 text-gray-400 hover:text-white"
-              onClick={() => setSelectedProject(null)}
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {services.map((service, index) => (
+            <motion.article
+              key={service.title}
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.25 }}
+              transition={{ delay: index * 0.06 }}
+              whileHover={{ y: -5 }}
+              className="rounded-3xl border border-white/12 bg-white/6 p-6 backdrop-blur-xl glass-card"
             >
-              ✕
-            </button>
+              <div className="mb-4 inline-flex rounded-xl border border-white/12 bg-[#0a2137]/90 p-3">
+                <service.icon className="text-emerald-300" size={22} />
+              </div>
+              <h3 className="font-[Sora,sans-serif] text-xl font-medium text-white">{service.title}</h3>
+              <p className="mt-2 text-slate-300">{service.description}</p>
+            </motion.article>
+          ))}
+        </div>
+      </section>
 
-            {/* 📱 App Image */}
-            <img
-              src={selectedProject.image}
-              alt={selectedProject.name}
-              className="w-full h-64 object-cover rounded-2xl mb-6"
+      <section className="mx-auto max-w-6xl px-5 pb-10 pt-8 md:px-8">
+        <SectionHeader
+          eyebrow="Why Hire Me"
+          title="Execution quality that reduces risk"
+          subtitle="Technical ownership, clear communication, and dependable release cycles."
+        />
+
+        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+          {benefits.map((item, index) => (
+            <motion.article
+              key={item.title}
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.25 }}
+              transition={{ delay: index * 0.06 }}
+              className="rounded-3xl border border-white/12 bg-white/6 p-6 backdrop-blur-xl glass-card"
+            >
+              <item.icon className="mb-4 text-cyan-300" size={22} />
+              <h3 className="font-[Sora,sans-serif] text-lg font-medium text-white">{item.title}</h3>
+              <p className="mt-2 text-slate-300">{item.text}</p>
+            </motion.article>
+          ))}
+        </div>
+      </section>
+
+      <section id="contact" className="mx-auto max-w-4xl px-5 pb-24 pt-14 md:px-8">
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.25 }}
+          className="relative overflow-hidden rounded-[2rem] border border-white/15 bg-white/8 p-8 text-center backdrop-blur-xl glass-card md:p-12"
+        >
+          <div className="pointer-events-none absolute -right-24 -top-24 h-60 w-60 rounded-full bg-cyan-400/20 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-24 -left-20 h-52 w-52 rounded-full bg-emerald-400/20 blur-3xl" />
+
+          <h2 className="relative font-[Sora,sans-serif] text-3xl font-semibold text-white md:text-4xl">
+            Ready to build your Android app?
+          </h2>
+          <p className="relative mx-auto mt-4 max-w-2xl text-slate-200 md:text-lg">
+            Let&apos;s discuss your idea, timeline, and launch plan. I can join from planning to production delivery.
+          </p>
+
+          <form onSubmit={handleFormSubmit} className="relative mx-auto mt-8 grid max-w-2xl gap-3 text-left">
+            <input
+              type="text"
+              placeholder="Your name"
+              value={contactForm.name}
+              onChange={(event) =>
+                setContactForm((prev) => ({
+                  ...prev,
+                  name: event.target.value,
+                }))
+              }
+              className="rounded-xl border border-white/20 bg-[#0a2137]/70 px-4 py-3 text-white placeholder:text-slate-400 focus:border-cyan-300/70 focus:outline-none"
             />
+            <input
+              type="email"
+              placeholder="Your email"
+              value={contactForm.email}
+              onChange={(event) =>
+                setContactForm((prev) => ({
+                  ...prev,
+                  email: event.target.value,
+                }))
+              }
+              className="rounded-xl border border-white/20 bg-[#0a2137]/70 px-4 py-3 text-white placeholder:text-slate-400 focus:border-cyan-300/70 focus:outline-none"
+            />
+            <input
+              type="text"
+              placeholder="Project budget (e.g. $2,000 - $5,000)"
+              value={contactForm.budget}
+              onChange={(event) =>
+                setContactForm((prev) => ({
+                  ...prev,
+                  budget: event.target.value,
+                }))
+              }
+              className="rounded-xl border border-white/20 bg-[#0a2137]/70 px-4 py-3 text-white placeholder:text-slate-400 focus:border-cyan-300/70 focus:outline-none"
+            />
+            <textarea
+              placeholder="Tell me about your app idea"
+              rows={5}
+              value={contactForm.message}
+              onChange={(event) =>
+                setContactForm((prev) => ({
+                  ...prev,
+                  message: event.target.value,
+                }))
+              }
+              className="rounded-xl border border-white/20 bg-[#0a2137]/70 px-4 py-3 text-white placeholder:text-slate-400 focus:border-cyan-300/70 focus:outline-none"
+            />
+            {formError && <p className="text-sm text-rose-300">{formError}</p>}
+            <button
+              type="submit"
+              className="mt-1 inline-flex w-fit items-center rounded-full bg-gradient-to-r from-cyan-400 to-emerald-400 px-6 py-3 font-medium text-[#05212e]"
+            >
+              Submit Project Inquiry
+            </button>
+          </form>
 
-            {/* 🧠 App Info */}
-            <h2 className="text-3xl font-bold mb-2">{selectedProject.name}</h2>
-            <p className="text-gray-400 mb-6">{selectedProject.description}</p>
-
-            {/* 🛠 Tech Stack */}
-            <div className="flex flex-wrap gap-2 mb-6">
-              {selectedProject.tags.map(tag => (
-                <span
-                  key={tag}
-                  className="px-3 py-1 text-sm rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-
-            {/* 🔘 Actions */}
-            <div className="flex gap-4">
-              <a
-                href={selectedProject.github}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Button>View on GitHub</Button>
-              </a>
-
-              <Button
-                variant="outline"
-                onClick={() => setSelectedProject(null)}
-              >
-                Close
-              </Button>
-            </div>
-          </motion.div>
-        </div>
-      )}
-
-
-      {/* Footer */}
-      <footer className="py-12 px-6 border-t border-white/10 relative">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-            <div className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">
-              AndroidDev
-            </div>
-
-            <div className="flex gap-6">
-              {['About', 'Skills', 'Projects', 'Services', 'Contact'].map((item) => (
-                <a
-                  key={item}
-                  href={`#${item.toLowerCase()}`}
-                  className="text-gray-400 hover:text-white transition-colors text-sm"
-                >
-                  {item}
-                </a>
-              ))}
-            </div>
-
-            <div className="flex gap-4">
-              {[
-                {
-                  icon: FaGithub,
-                  link: "https://github.com/kumarpankajkumar123",
-                  label: "GitHub",
-                  blank: true,
-                },
-                {
-                  icon: FaLinkedin,
-                  link: "https://www.linkedin.com/in/pankaj-kumar-a5a827224/",
-                  label: "LinkedIn",
-                  blank: true,
-                },
-                {
-                  icon: FaTwitter,
-                  link: "https://x.com/pankajk26315693",
-                  label: "Twitter",
-                  blank: true,
-                },
-                {
-                  icon: Mail,
-                  link: "mailto:pankajkm7417@gmail.com?subject=Freelance%20Android%20Project&body=Hi%20Pankaj,%0A%0AI%20want%20to%20discuss%20an%20Android%20app%20idea.",
-                  label: "Email",
-                  blank: false,
-                },
-              ].map((social, index) => (
-                <motion.a
-                  key={index}
-                  href={social.link}
-                  {...(social.blank && {
-                    target: "_blank",
-                    rel: "noopener noreferrer",
-                  })}
-                  whileHover={{ scale: 1.2, y: -2 }}
-                  className="p-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
-                  title={social.label}
-                >
-                  <social.icon size={18} className="text-gray-400 hover:text-white" />
-                </motion.a>
-              ))}
-            </div>
-
-
+          <div className="relative mt-8 flex flex-wrap justify-center gap-3">
+            <a
+              href="mailto:pankajkm347@gmail.com"
+              className="inline-flex items-center rounded-full bg-gradient-to-r from-cyan-400 to-emerald-400 px-6 py-3 font-medium text-[#05212e]"
+            >
+              <Mail className="mr-2" size={18} /> Email Me
+            </a>
+            <a
+              href="/resume/pankaj_just_update.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center rounded-full border border-white/25 bg-white/5 px-6 py-3 text-white transition hover:bg-white/10"
+            >
+              <FaFilePdf className="mr-2" /> Download Resume
+            </a>
           </div>
 
-          <div className="mt-8 pt-8 border-t border-white/10 text-center text-gray-500 text-sm">
-            <p>
-              © 2025 Pankaj Kumar. Building scalable Android apps with ❤️ & passion 🚀
-            </p>
+          <div className="relative mt-8 flex justify-center gap-4">
+            <a
+              href="https://github.com/kumarpankajkumar123"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-full border border-white/20 bg-white/5 p-3 text-slate-100 transition hover:bg-white/10"
+              aria-label="GitHub"
+            >
+              <FaGithub size={20} />
+            </a>
+            <a
+              href="https://www.linkedin.com/in/pankaj-kumar-a5a827224/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-full border border-white/20 bg-white/5 p-3 text-slate-100 transition hover:bg-white/10"
+              aria-label="LinkedIn"
+            >
+              <FaLinkedin size={20} />
+            </a>
+            <a
+              href="https://x.com/pankajk26315693"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-full border border-white/20 bg-white/5 p-3 text-slate-100 transition hover:bg-white/10"
+              aria-label="Twitter"
+            >
+              <FaTwitter size={20} />
+            </a>
           </div>
-        </div>
+        </motion.div>
+      </section>
+
+      <footer className="border-t border-white/10 px-5 py-8 text-center text-xs text-slate-400 md:px-8">
+        © 2026 Pankaj Kumar. Built with modern React, TypeScript, and motion-first UI.
       </footer>
 
+      <AnimatePresence>
+        {selectedProject && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[70] flex items-center justify-center bg-black/72 px-4 backdrop-blur-sm"
+            onClick={() => setSelectedProject(null)}
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 16, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 16, scale: 0.96 }}
+              transition={{ duration: 0.2 }}
+              className="relative w-full max-w-2xl overflow-hidden rounded-[1.75rem] border border-white/15 bg-[#0a1d2f]"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <button
+                onClick={() => setSelectedProject(null)}
+                aria-label="Close"
+                className="absolute right-4 top-4 z-10 rounded-full border border-white/20 bg-black/20 p-2 text-white"
+              >
+                <X size={16} />
+              </button>
 
+              <ImageWithFallback
+                src={selectedProject.image}
+                alt={selectedProject.name}
+                className="h-64 w-full object-cover"
+              />
 
+              <div className="p-6">
+                <h3 className="font-[Sora,sans-serif] text-2xl font-semibold text-white">{selectedProject.name}</h3>
+                <p className="mt-3 text-slate-300">{selectedProject.description}</p>
 
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {selectedProject.tags.map((tag) => (
+                    <span key={tag} className="rounded-full bg-white/10 px-3 py-1 text-xs text-white">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
 
+                <a
+                  href={selectedProject.github}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-6 inline-flex items-center rounded-full bg-gradient-to-r from-cyan-400 to-emerald-400 px-5 py-2 text-sm font-medium text-[#05212e]"
+                >
+                  <FaGithub className="mr-2" /> View on GitHub <ExternalLink className="ml-2" size={14} />
+                </a>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
+
+
+
+
+
+
