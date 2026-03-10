@@ -757,7 +757,7 @@ export default function App() {
               <Mail className="mr-2" size={18} /> Email Me
             </a>
             <a
-              href="/resume/pankaj_just_update.pdf"
+              href={`${import.meta.env.BASE_URL}resume/pankaj_just_update.pdf`}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center rounded-full border border-white/25 bg-white/5 px-6 py-3 text-white transition hover:bg-white/10"
