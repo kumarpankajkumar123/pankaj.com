@@ -1,0 +1,31 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+
+    <!-- Background Gradient -->
+    <defs>
+        <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#4F46E5"></stop>
+            <stop offset="50%" stop-color="#7C3AED"></stop>
+            <stop offset="100%" stop-color="#EC4899"></stop>
+        </linearGradient>
+    </defs>
+
+    <!-- Rounded Background -->
+    <rect x="0" y="0" width="512" height="512" rx="120" fill="url(#bgGradient)"></rect>
+
+    <!-- Play Icon -->
+    <path d="M190 160 L190 352 L330 256 Z" fill="#FFFFFF"></path>
+
+    <!-- Book Icon -->
+    <path d="M330 160
+             C360 160 380 170 400 190
+             V350
+             C380 330 360 320 330 320
+             Z" fill="#FFFFFF" opacity="0.95"></path>
+
+    <path d="M330 160
+             C300 160 280 170 260 190
+             V350
+             C280 330 300 320 330 320
+             Z" fill="#FFFFFF" opacity="0.85"></path>
+
+</svg>
